@@ -1,0 +1,111 @@
+<html>
+	<head>
+		<title>Bashes - Final Project</title>
+		<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+		<script src='bam.js' defer></script>
+		<style>
+			code {
+				background-color: #ddd;
+				display: block;
+				padding: 10px;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Student Residency Makeup</h3>
+		<div id='graph-residents'></div>
+		<code>
+SELECT COUNT(*), st."Residency"<br/>
+FROM public."Student" st<br/>
+GROUP BY st."Residency"
+		</code>
+		<p>This is useful, because our app only should focus on people who are residents.</p>
+		<hr/>
+		<h1>Student Gender Makeup</h3>
+		<div id='graph-gender'></div>
+		<code>
+SELECT COUNT(*), st."Gender"<br/>
+FROM public."Student" st<br/>
+GROUP BY st."Gender"
+		</code>
+		<p>We want to group people of similar genders because we feel like people would be more comfortable travelling with the same gender.<p>
+		<hr/>
+		<h1>Students in Each Department</h3>
+		<div id='graph-department'></div>
+		<code>
+SELECT COUNT(*), dp."DepartFullName"<br/>
+FROM public."Student" st<br/>
+LEFT JOIN "Department" dp ON st."DepartID" = dp."DepartID"<br/>
+GROUP BY dp."DepartFullName";
+		</code>
+		<p>We wanted to see how many students we could group together that had similar interests.</p>
+		<hr/>
+		<h1>Top 15 Cities With People From Texas Tech</h3>
+		<div id='graph-origin'></div>
+<code>
+SELECT COUNT(*), ct."CityName"<br/>
+FROM "Student" st<br/>
+INNER JOIN "City" ct ON ct."CityID" = st."CityID"<br/>
+GROUP BY ct."CityName"<br/>
+HAVING ct."CityName" <> 'Lubbock'<br/>
+ORDER BY COUNT(*) DESC
+</code>
+		<p>We want to see where the most people are from, so we can determine which cities we want to market towards.</p>
+		<hr/>
+		<h1>Grouping of Cities</h3>
+		<div id='graph-city-count'></div>
+<code>
+SELECT * FROM CityGroup
+</code>
+<code>
+CREATE OR REPLACE VIEW CityGroup AS
+SELECT COUNT(*) FROM (<br/>
+SELECT COUNT(*), ct."CityName"<br/>
+FROM "Student" st<br/>
+INNER JOIN "City" ct ON ct."CityID" = st."CityID"<br/>
+GROUP BY ct."CityName"<br/>
+HAVING COUNT(*) > 150<br/>
+ORDER BY COUNT(*) DESC<br/>
+) AS "P";
+</code>
+		<p>This breaks down the number of students by each city.</p>
+		<hr/>
+		<h1>Top Cities Computer Science Students Are From</h3>
+		<div id='graph-city-cs'></div>
+<code>
+SELECT COUNT(*), ct."CityName"<br/>
+FROM "Student" st<br/>
+INNER JOIN "City" ct ON ct."CityID" = st."CityID"<br/>
+WHERE st."MajorID" = 146<br/>
+GROUP BY ct."CityName"<br/>
+HAVING ct."CityName" <> 'Lubbock'<br/>
+ORDER BY COUNT(*) DESC
+</code>
+		<p>Maybe grouping people by major isn't very feasible, due to the low numbers of people from each city with the same major.</p>
+		<hr/>
+		<h1>Interesting Statistics</h1>
+		<ul>
+			<li>If we made everyone from the top 15 cities carpool together (in groups of 4), we would save <b>$1,921,920</b> in gas per year, if 4 trips were made by students per year (assuming one way is $40).
+				<code>
+SELECT COUNT(*), ct."CityName"<br/>
+FROM "Student" st<br/>
+INNER JOIN "City" ct ON ct."CityID" = st."CityID"<br/>
+GROUP BY ct."CityName"<br/>
+HAVING ct."CityName" <> 'Lubbock'<br/>
+ORDER BY COUNT(*) DESC<br/>
+LIMIT 15;
+				</code>
+			</li>
+			<li>The probability of a random student having a carpool partner is 0.4 (40%).
+				<code>
+SELECT AVG(*) FROM<br/>
+(<br/>
+SELECT COUNT(*)<br/>
+FROM "Student"<br/>
+GROUP BY "CityID"<br/>
+);
+				</code>
+			</li>
+		</ul>
+	</body>
+</html>
